@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Particle Architect | 3D Swarm Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Outfit:wght@200;300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06060a;--sf:rgba(255,255,255,0.035);--sh:rgba(255,255,255,0.07);--bd:rgba(255,255,255,0.07);--tx:#e8e8ec;--dm:rgba(255,255,255,0.38);--ac:#6366f1;--gl:rgba(99,102,241,0.25);--gn:#22c55e;--or:#f59e0b;--btc:#f7931a;--eth:#627eea;--sol:#9945ff}
+body{background:var(--bg);color:var(--tx);font-family:'Outfit',sans-serif;overflow:hidden;height:100vh;width:100vw}
+canvas{display:block}
+#rc{position:fixed;inset:0;z-index:0}
+.tb{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(180deg,rgba(6,6,10,0.96) 0%,rgba(6,6,10,0.5) 80%,transparent 100%);pointer-events:none}
+.tb>*{pointer-events:auto}
+.lg{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;letter-spacing:-0.02em}
+.lg-i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--ac),#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px}
+.sb{display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dm)}
+.st{display:flex;align-items:center;gap:4px}.sd{width:5px;height:5px;border-radius:50%}
+.sd.g{background:var(--gn);box-shadow:0 0 6px var(--gn)}.sd.o{background:var(--or);box-shadow:0 0 6px var(--or)}
+.sv{color:var(--tx);font-weight:500}
+.xb{display:flex;align-items:center;gap:5px;padding:5px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;text-decoration:none}
+.xb:hover{background:rgba(29,161,242,0.15);border-color:rgba(29,161,242,0.4);color:#1da1f2}
+.xb svg{width:14px;height:14px;fill:currentColor}
+.sp{position:fixed;top:52px;right:12px;bottom:12px;width:320px;z-index:50;display:flex;flex-direction:column;gap:6px;overflow-y:auto;scrollbar-width:none}
+.sp::-webkit-scrollbar{display:none}
+.pc{background:rgba(10,10,16,0.88);backdrop-filter:blur(20px);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--dm)}
+.ph .badge{font-size:9px;padding:2px 7px;border-radius:100px;background:rgba(99,102,241,0.15);color:var(--ac);font-weight:500}
+.tn{display:flex;gap:2px;background:rgba(255,255,255,0.03);border-radius:8px;padding:2px;flex-wrap:wrap}
+.tn button{flex:1;padding:7px 3px;border:none;border-radius:6px;background:transparent;color:var(--dm);font-family:'Outfit',sans-serif;font-size:9.5px;font-weight:500;cursor:pointer;transition:all 0.2s;text-align:center;min-width:0}
+.tn button:hover{color:var(--tx);background:rgba(255,255,255,0.04)}
+.tn button.a{background:rgba(99,102,241,0.15);color:var(--ac)}
+.tc{display:none}.tc.a{display:block}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.pb{padding:8px 8px;background:var(--sf);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:10.5px;font-weight:400;cursor:pointer;transition:all 0.2s;text-align:left;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb:hover{background:var(--sh);border-color:rgba(99,102,241,0.25);transform:translateY(-1px)}
+.pb.a{background:rgba(99,102,241,0.1);border-color:var(--ac);box-shadow:0 0 10px var(--gl)}
+.pb.cbtc.a{border-color:var(--btc);background:rgba(247,147,26,0.08)}.pb.ceth.a{border-color:var(--eth);background:rgba(98,126,234,0.08)}.pb.csol.a{border-color:var(--sol);background:rgba(153,69,255,0.08)}
+.cg{margin-bottom:8px}.cg:last-child{margin-bottom:0}
+.cl{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--dm);margin-bottom:5px}
+.cv{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--tx)}
+input[type="range"]{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;outline:none}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ac);cursor:pointer;box-shadow:0 0 6px var(--gl)}
+.ti{width:100%;padding:8px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-family:'Outfit',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s}
+.ti:focus{border-color:var(--ac)}.ti::placeholder{color:var(--dm)}
+.cb{display:flex;gap:3px}
+.cbtn{flex:1;padding:5px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;color:var(--dm);font-family:'JetBrains Mono',monospace;font-size:9.5px;cursor:pointer;transition:all 0.2s;text-align:center}
+.cbtn:hover{background:var(--sh)}.cbtn.a{background:rgba(99,102,241,0.12);border-color:var(--ac);color:var(--ac)}
+.ab{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px;background:linear-gradient(135deg,var(--ac),#8b5cf6);border:none;border-radius:7px;color:white;font-family:'Outfit',sans-serif;font-size:11.5px;font-weight:500;cursor:pointer;transition:all 0.2s}
+.ab:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--gl)}
+.ab.s{background:var(--sf);border:1px solid var(--bd);color:var(--tx)}.ab.s:hover{background:var(--sh);box-shadow:none}
+.dz{border:2px dashed var(--bd);border-radius:8px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.3s;font-size:11px;color:var(--dm);line-height:1.5}
+.dz:hover,.dz.dg{border-color:var(--ac);background:rgba(99,102,241,0.05)}
+.dz .di{font-size:24px;margin-bottom:4px;display:block}.dz .fm{font-size:9px;margin-top:4px;opacity:0.5;display:block}
+.io{position:fixed;bottom:16px;left:16px;z-index:50;max-width:300px}
+.ic{background:rgba(10,10,16,0.88);backdrop-filter:blur(20px);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.it{font-size:14px;font-weight:600;margin-bottom:3px}.id{font-size:11px;color:var(--dm);line-height:1.5}
+#cc{display:flex;flex-direction:column;gap:8px}
+.lo{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.6s,visibility 0.6s}
+.lo.h{opacity:0;visibility:hidden;pointer-events:none}
+.ls{width:36px;height:36px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px}
+.sb2{padding:8px 4px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:18px;cursor:pointer;transition:all 0.2s;text-align:center;line-height:1}
+.sb2:hover{background:var(--sh)}.sb2.a{background:rgba(99,102,241,0.1);border-color:var(--ac)}
+.sb2 .sl{font-size:8px;display:block;margin-top:2px;color:var(--dm)}
+.ann{position:absolute;pointer-events:none;z-index:40;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ac);background:rgba(10,10,16,0.7);backdrop-filter:blur(8px);padding:3px 8px;border-radius:4px;border:1px solid rgba(99,102,241,0.2);white-space:nowrap;transform:translate(-50%,-50%);opacity:0.85}
+/* GALLERY */
+.gal-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gal-card{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--bd);cursor:pointer;transition:all 0.2s;background:var(--sf)}
+.gal-card:hover{border-color:var(--ac);transform:translateY(-2px);box-shadow:0 4px 16px var(--gl)}
+.gal-card img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
+.gal-card .gal-info{padding:6px 8px}
+.gal-card .gal-name{font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gal-card .gal-meta{font-size:8px;color:var(--dm);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.gal-card .gal-del{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#ef4444;font-size:11px;cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1}
+.gal-card:hover .gal-del{display:flex}
+.gal-empty{font-size:10.5px;color:var(--dm);text-align:center;padding:16px 0;line-height:1.6}
+.save-btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:7px;color:white;font-family:'Outfit',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;width:100%;margin-bottom:10px}
+.save-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(34,197,94,0.3)}
+@media(max-width:768px){.sp{width:260px;right:6px;top:50px;bottom:6px}.io{display:none}.sb{display:none}}
+</style>
+</head>
+<body>
+<div class="lo" id="lo"><div class="ls"></div><div style="font-size:12px;color:var(--dm)">Initializing particle system...</div></div>
+<div id="rc"></div><div id="annotations"></div>
+<div class="tb">
+  <div class="lg"><div class="lg-i">✦</div><span>Particle Architect</span></div>
+  <div class="sb">
+    <div class="st"><div class="sd g"></div><span>Particles:</span><span class="sv" id="s-c">20,000</span></div>
+    <div class="st"><div class="sd o"></div><span>FPS:</span><span class="sv" id="s-f">60</span></div>
+    <div class="st"><span>Time:</span><span class="sv" id="s-t">0.0s</span></div>
+    <a class="xb" id="xBtn" href="#" onclick="shareX(event)"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span>Share</span></a>
+  </div>
+</div>
+<div class="sp">
+  <div class="pc" style="padding:8px">
+    <div class="tn" id="tabs">
+      <button class="a" data-t="presets">Effects</button>
+      <button data-t="crypto">Crypto</button>
+      <button data-t="shapes">Shapes</button>
+      <button data-t="text">Text</button>
+      <button data-t="models">3D</button>
+      <button data-t="gallery">Gallery</button>
+    </div>
+  </div>
+  <div class="tc a" data-t="presets"><div class="pc"><div class="ph">Effect Presets<span class="badge" id="presetCount">20</span></div><div class="pg" id="pG"></div></div></div>
+  <div class="tc" data-t="crypto"><div class="pc"><div class="ph">Crypto Logos<span class="badge">3</span></div><div class="pg" id="cG"></div></div></div>
+  <div class="tc" data-t="shapes"><div class="pc"><div class="ph">Custom Shapes</div><div class="sg" id="sG"></div></div></div>
+  <div class="tc" data-t="text"><div class="pc"><div class="ph">Smart Text Engine</div><input type="text" class="ti" id="tI" placeholder="Type anything..." value="HELLO" maxlength="16"><div style="height:8px"></div><button class="ab" onclick="applyText()">✦ Render Text</button></div></div>
+  <div class="tc" data-t="models"><div class="pc"><div class="ph">3D Model Import<span class="badge">GLB/OBJ/PDB</span></div><div class="dz" id="dZ"><span class="di">📦</span>Drag & drop or click<span class="fm">.glb · .obj · .pdb</span></div><div style="height:8px"></div><div class="ph">Sample Models<span class="badge">built-in</span></div><div class="pg" id="mG"></div></div></div>
+  <div class="tc" data-t="gallery"><div class="pc"><button class="save-btn" onclick="saveToGallery()">📸 Save Current to Gallery</button><div class="ph">My Gallery<span class="badge" id="galCount">0</span></div><div id="galGrid" class="gal-grid"></div></div></div>
+  <div class="pc"><div class="ph">Controls</div><div id="cc"></div></div>
+  <div class="pc"><div class="ph">Particle Count</div><div class="cb" id="cB"></div></div>
+  <div class="pc">
+    <div class="ph">Global Settings</div>
+    <div class="cg"><div class="cl"><span>Particle Size</span><span class="cv" id="v-sz">1.2</span></div><input type="range" id="g-sz" min="0.2" max="4" step="0.1" value="1.2"></div>
+    <div class="cg"><div class="cl"><span>Smoothing</span><span class="cv" id="v-sm">0.08</span></div><input type="range" id="g-sm" min="0.01" max="0.3" step="0.01" value="0.08"></div>
+    <div class="cg"><div class="cl"><span>Speed</span><span class="cv" id="v-sp">1.0</span></div><input type="range" id="g-sp" min="0.1" max="3" step="0.1" value="1.0"></div>
+    <div class="cg"><div class="cl"><span>Camera Distance</span><span class="cv" id="v-cd">80</span></div><input type="range" id="g-cd" min="20" max="200" step="5" value="80"></div>
+  </div>
+  <div class="pc"><button class="ab s" onclick="resetCam()">↺ Reset Camera</button></div>
+</div>
+<div class="io"><div class="ic"><div class="it" id="i-t">Loading...</div><div class="id" id="i-d"></div></div></div>
+<input type="file" id="fI" accept=".glb,.gltf,.obj,.pdb" style="display:none">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const PCS=[5000,10000,20000,50000,80000];
+let N=20000,pSz=1.2,smth=0.08,tSpd=1.0,simT=0;
+let mode='preset',presetI=0,cryptoI=-1,shapeI=0;
+let modelPts=null,textPts=null;
+
+// === addControl / setInfo / annotate API ===
+const _c={};let _cu={},_nr=false;
+function addControl(id,lb,mn,mx,iv){if(!_c[id]){_c[id]={lb,mn,mx,val:iv};_nr=true}_cu[id]=true;return _c[id].val}
+function rebuildControls(){const w=document.getElementById('cc');w.innerHTML='';const ids=Object.keys(_c);if(!ids.length){w.innerHTML='<div style="font-size:10.5px;color:var(--dm)">No controls.</div>';return}ids.forEach(id=>{const c=_c[id],d=document.createElement('div');d.className='cg';const st=(c.mx-c.mn)>20?1:0.1;d.innerHTML=`<div class="cl"><span>${c.lb}</span><span class="cv" id="vc-${id}">${Number.isInteger(c.val)?c.val:c.val.toFixed(1)}</span></div><input type="range" min="${c.mn}" max="${c.mx}" step="${st}" value="${c.val}">`;w.appendChild(d);d.querySelector('input').addEventListener('input',function(){c.val=+this.value;document.getElementById('vc-'+id).textContent=Number.isInteger(c.val)?c.val:c.val.toFixed(1)})})}
+function clearControls(){for(const id in _c)delete _c[id];_cu={};_nr=true}
+function setInfo(t,d){document.getElementById('i-t').textContent=t;document.getElementById('i-d').textContent=d}
+const _ann={},annC=document.getElementById('annotations');
+function annotate(id,p,l){if(!_ann[id]){const e=document.createElement('div');e.className='ann';annC.appendChild(e);_ann[id]={el:e,pos:p,lb:l}}_ann[id].pos=p;_ann[id].lb=l;_ann[id].el.textContent=l}
+function clearAnnotations(){for(const id in _ann){_ann[id].el.remove();delete _ann[id]}}
+function updateAnnotations(){for(const id in _ann){const a=_ann[id],v=a.pos.clone().project(cam);if(v.z>1){a.el.style.display='none';continue}a.el.style.display='';a.el.style.left=(v.x*0.5+0.5)*innerWidth+'px';a.el.style.top=(-v.y*0.5+0.5)*innerHeight+'px'}}
+function shareX(e){e.preventDefault();const t=document.getElementById('i-t').textContent;window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out "${t}" — ${N.toLocaleString()} particle 3D swarm! Built with Particle Architect ✦`)}&url=${encodeURIComponent(location.href)}`,'_blank','width=600,height=400')}
+
+// === THREE ===
+const cont=document.getElementById('rc'),sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,1000);
+cam.position.set(0,20,80);
+const ren=new THREE.WebGLRenderer({antialias:false,preserveDrawingBuffer:true});
+ren.setSize(innerWidth,innerHeight);ren.setPixelRatio(Math.min(devicePixelRatio,2));ren.setClearColor(0x06060a,1);cont.appendChild(ren.domElement);
+
+// === ORBIT ===
+let drag=false,pm={x:0,y:0},sph={t:0,p:Math.PI/4,r:80},tgt={t:0,p:Math.PI/4,r:80};
+function uCam(){cam.position.set(sph.r*Math.sin(sph.p)*Math.sin(sph.t),sph.r*Math.cos(sph.p),sph.r*Math.sin(sph.p)*Math.cos(sph.t));cam.lookAt(0,0,0)}
+ren.domElement.addEventListener('mousedown',e=>{drag=true;pm={x:e.clientX,y:e.clientY}});addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{if(!drag)return;tgt.t-=(e.clientX-pm.x)*0.005;tgt.p=Math.max(0.1,Math.min(Math.PI-0.1,tgt.p+(e.clientY-pm.y)*0.005));pm={x:e.clientX,y:e.clientY}});
+ren.domElement.addEventListener('wheel',e=>{tgt.r=Math.max(20,Math.min(200,tgt.r+e.deltaY*0.1));document.getElementById('g-cd').value=tgt.r;document.getElementById('v-cd').textContent=Math.round(tgt.r)});
+ren.domElement.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;pm={x:e.touches[0].clientX,y:e.touches[0].clientY}}});
+ren.domElement.addEventListener('touchmove',e=>{if(!drag||e.touches.length!==1)return;e.preventDefault();tgt.t-=(e.touches[0].clientX-pm.x)*0.005;tgt.p=Math.max(0.1,Math.min(Math.PI-0.1,tgt.p+(e.touches[0].clientY-pm.y)*0.005));pm={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:false});
+ren.domElement.addEventListener('touchend',()=>drag=false);
+
+// === PARTICLES ===
+let geo,mat,points,pos,col;
+function makeParts(c){if(points){sc.remove(points);geo.dispose();mat.dispose()}N=c;geo=new THREE.BufferGeometry();pos=new Float32Array(c*3);col=new Float32Array(c*3);for(let i=0;i<c*3;i++){pos[i]=(Math.random()-0.5)*100;col[i]=1}geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));mat=new THREE.PointsMaterial({size:pSz,vertexColors:true,transparent:true,opacity:0.85,sizeAttenuation:true,blending:THREE.AdditiveBlending,depthWrite:false});points=new THREE.Points(geo,mat);sc.add(points);document.getElementById('s-c').textContent=c.toLocaleString()}
+function hash(i){return((Math.sin(i*12.9898+i*78.233)*43758.5453)%1+1)%1}
+
+// ================================================================
+// 20 EFFECT PRESETS
+// ================================================================
+const PRESETS=[
+{name:"🧬 DNA Helix",code(i,c,t,co,T){const r=addControl("r","Radius",5,40,15),tw=addControl("tw","Twist",5,40,20),n=i/c,a=n*Math.PI*tw+T*0.5,s=i%2===0?1:-1,b=i%20<2?0:s;t.set(Math.cos(a)*r*b,(n-0.5)*80+Math.sin(T+n*10)*1.5,Math.sin(a)*r*b);co.setHSL((n+T*0.05)%1,0.8,0.55);if(i===0){setInfo("Double Helix DNA","Intertwined helical strands with nucleotide bridges.");annotate("t",new THREE.Vector3(0,40,0),"5' end");annotate("b",new THREE.Vector3(0,-40,0),"3' end")}}},
+{name:"🌀 Galaxy",code(i,c,t,co,T){const arms=addControl("a","Arms",2,8,4),sp=addControl("sp","Spread",1,10,3),n=i/c,arm=i%arms,aA=(arm/arms)*Math.PI*2,d=Math.pow(n,0.5)*60,s=d*0.12+aA+T*0.2,sc2=(1-n)*sp+Math.sin(i*12.34)*2,h=Math.max(0,6-d*0.15)*(Math.sin(i*7.77)*0.5+0.5);t.set(Math.cos(s)*d+Math.sin(i*3.45)*sc2,h+Math.sin(i*5.67+T)*sc2*0.3,Math.sin(s)*d+Math.cos(i*2.34)*sc2);co.setHSL(0.6+n*0.2+arm*0.05,0.7,Math.max(0.35,1-d/70));if(i===0){setInfo("Spiral Galaxy","Rotating spiral galaxy with glowing core.");annotate("c",new THREE.Vector3(0,0,0),"Core")}}},
+{name:"🌊 Wave Field",code(i,c,t,co,T){const fr=addControl("f","Frequency",1,15,5),am=addControl("am","Amplitude",1,15,6),s=Math.ceil(Math.sqrt(c)),ix=i%s,iz=Math.floor(i/s),x=(ix/s-0.5)*80,z=(iz/s-0.5)*80,d=Math.sqrt(x*x+z*z),y=Math.sin(d*fr*0.1-T*2)*am+Math.cos(x*0.1+T)*3+Math.sin(z*0.15-T*0.7)*2;t.set(x,y,z);co.setHSL(0.55+(y+10)/20*0.15,0.8,0.4+(y+10)/20*0.25);if(i===0)setInfo("Parametric Wave Field","Undulating interference patterns.")}},
+{name:"💫 Lorenz",code(i,c,t,co,T){const ch=addControl("ch","Chaos",0,100,50);let x=Math.sin(i*0.1)*0.1,y=Math.cos(i*0.2)*0.1,z=Math.sin(i*0.3)*0.1;for(let s=0;s<40+(i%60);s++){const dx=10*(y-x),dy=x*(28-z)-y,dz=x*y-2.667*z;x+=dx*0.005;y+=dy*0.005;z+=dz*0.005}const w=Math.sin(T*0.3+i*0.01)*(ch/50);t.set(x*1.2+w,z*1.2-25+w,y*1.2+w);co.setHSL((i/c+T*0.02)%1,0.9,0.5);if(i===0)setInfo("Lorenz Attractor","Classic chaotic attractor system.")}},
+{name:"🔮 Sphere",code(i,c,t,co,T){const p=addControl("p","Pulse",0,100,50)/50,ph=Math.acos(1-2*(i+0.5)/c),th=Math.PI*(1+Math.sqrt(5))*i,r=25+Math.sin(T*1.5+ph*3)*5*p+Math.sin(th*2+T)*3*p;t.set(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th));co.setHSL((ph/Math.PI+T*0.05)%1,0.85,0.5+Math.sin(T+th)*0.15);if(i===0)setInfo("Breathing Sphere","Pulsing sphere with flowing particles.")}},
+{name:"🌸 Bloom",code(i,c,t,co,T){const pt=addControl("pt","Petals",2,12,5),g=Math.PI*(3-Math.sqrt(5)),n=i/c,th=g*i+T*0.3,r=Math.sqrt(n)*35,pw=Math.sin(th*pt+T)*5*n,y=Math.sin(n*Math.PI*4+T)*3+pw*0.5;t.set(Math.cos(th)*(r+pw),y,Math.sin(th)*(r+pw));co.setHSL((n*0.3+0.9+Math.sin(T*0.2)*0.1)%1,0.85,0.55);if(i===0)setInfo("Fibonacci Bloom","Golden ratio flower pattern.")}},
+{name:"⚡ Vortex",code(i,c,t,co,T){const sp=addControl("sp","Speed",10,100,50),n=i/c,a=n*Math.PI*30+T*sp*0.04,r=n*40,l=(1-n)*50-25,w=Math.sin(n*20+T*3)*(1-n)*8;t.set(Math.cos(a)*r+w*0.3,l+Math.sin(T*2+n*10)*3,Math.sin(a)*r+w*0.3);co.setHSL(0.6+(1-n)*0.3,0.9,0.3+(1-n)*0.4);if(i===0)setInfo("Plasma Vortex","High-energy swirling vortex.")}},
+{name:"🎆 Firework",code(i,c,t,co,T){const pw=addControl("pw","Power",10,100,50),B=6,b=i%B,bo=b*1.2,ph=((T*0.5+bo)%(B*1.2))/1.2%1,int=pw/50,sd=b*1000+Math.floor(i/B),r1=((Math.sin(sd*12.99+sd*78.23)*43758.5)%1+1)%1,r2=((Math.sin(sd*43.33+sd*23.11)*23421.6)%1+1)%1,r3=((Math.sin(sd*67.12+sd*91.78)*65432.1)%1+1)%1,phi=Math.acos(1-2*r1),theta=r2*Math.PI*2,spd=(0.3+r3*0.7)*40*int,cx=(b-B/2)*15,cy=10+b*5,ex=ph*spd,gv=ph*ph*20;t.set(cx+Math.sin(phi)*Math.cos(theta)*ex,cy+Math.cos(phi)*ex-gv,Math.sin(phi)*Math.sin(theta)*ex);co.setHSL((b*0.15+T*0.05)%1,0.9,Math.max(0,1-ph*1.2)*0.6);if(i===0)setInfo("Firework Burst","Radial explosions with gravity.")}},
+// === 12 NEW PRESETS ===
+{name:"🔲 Tesseract 4D",code(i,c,t,co,T){const sc=addControl("sc","Scale",5,40,20),w4=addControl("w4","4D Rotation",0,5,1),n=i/c,edge=Math.floor(n*32)%32,et=n*32-Math.floor(n*32);const v=[[1,1,1,1],[1,1,1,-1],[1,1,-1,1],[1,1,-1,-1],[1,-1,1,1],[1,-1,1,-1],[1,-1,-1,1],[1,-1,-1,-1],[-1,1,1,1],[-1,1,1,-1],[-1,1,-1,1],[-1,1,-1,-1],[-1,-1,1,1],[-1,-1,1,-1],[-1,-1,-1,1],[-1,-1,-1,-1]];const e=[];for(let a=0;a<16;a++)for(let b=a+1;b<16;b++){let d=0;for(let k=0;k<4;k++)d+=Math.abs(v[a][k]-v[b][k]);if(d===2)e.push([a,b])}const ei=edge%e.length,ea=v[e[ei][0]],eb=v[e[ei][1]];let x=ea[0]+(eb[0]-ea[0])*et,y=ea[1]+(eb[1]-ea[1])*et,z=ea[2]+(eb[2]-ea[2])*et,ww=ea[3]+(eb[3]-ea[3])*et;const a4=T*0.5*w4,cw=Math.cos(a4),sw=Math.sin(a4),nx=x*cw-ww*sw,nw=x*sw+ww*cw;t.set(nx*sc/(2+nw*0.3),y*sc/(2+nw*0.3),z*sc/(2+nw*0.3));co.setHSL((n+T*0.05)%1,0.9,0.55);if(i===0)setInfo("Tesseract 4D","Hyper-dimensional cube rotating through 4D space.")}},
+{name:"➰ Möbius Strip",code(i,c,t,co,T){const R=addControl("R","Radius",10,40,20),W=addControl("W","Width",2,15,6),n=i/c,u=n*Math.PI*2,v2=(hash(i)-0.5)*W,hw=v2*0.5,a=u*0.5+T*0.3,x=(R+hw*Math.cos(a))*Math.cos(u),y=(R+hw*Math.cos(a))*Math.sin(u)*0.3,z=hw*Math.sin(a);t.set(x,y+Math.sin(u*3+T)*2,z);co.setHSL((n+T*0.04)%1,0.85,0.5);if(i===0)setInfo("Möbius Strip","One-sided non-orientable surface.")}},
+{name:"🪢 Torus Knot",code(i,c,t,co,T){const sc=addControl("sc","Scale",8,35,18),p=addControl("p","P",2,5,2),q=addControl("q","Q",1,7,3),n=i/c,th=n*Math.PI*2*p+T*0.3,ph=n*Math.PI*2*q,r=sc*(0.6+0.3*Math.cos(ph));t.set(r*Math.cos(th),r*Math.sin(th)*0.8+Math.sin(ph)*sc*0.3,Math.sin(ph)*sc*0.5*Math.cos(th*0.5));co.setHSL((n*0.5+T*0.03)%1,0.85,0.55);if(i===0)setInfo("Torus Knot","Parametric knot wound around a torus.")}},
+{name:"🕳️ Black Hole",code(i,c,t,co,T){const mass=addControl("m","Mass",10,60,30),disk=addControl("dk","Disk Size",20,80,50),n=i/c;if(n<0.7){const r2=3+Math.pow(n/0.7,0.5)*disk,a=n*Math.PI*200+T*0.8/(1+n*3),h=(hash(i)-0.5)*2*(1-n/0.7);t.set(Math.cos(a)*r2,h+Math.sin(a*3+T)*0.5,Math.sin(a)*r2);const br=Math.max(0.2,1-n);co.setHSL(0.05+n*0.08,0.9,br*0.6)}else{const n2=(n-0.7)/0.3,ph=Math.acos(1-2*n2),th=Math.PI*(1+Math.sqrt(5))*i,r=mass*0.15;t.set(Math.sin(ph)*Math.cos(th)*r*Math.sin(T+ph),Math.cos(ph)*r+Math.sin(T*2)*r*0.2,Math.sin(ph)*Math.sin(th)*r*Math.cos(T+ph));co.setHSL(0.7,0.5,0.15+Math.sin(T+i*0.01)*0.1)}if(i===0){setInfo("Black Hole","Accretion disk orbiting a singularity.");annotate("s",new THREE.Vector3(0,0,0),"Singularity")}}},
+{name:"🧠 Neural Net",code(i,c,t,co,T){const layers=addControl("ly","Layers",3,8,5),spread=addControl("sp","Spread",10,40,25),n=i/c,layer=Math.floor(n*layers),ni=(n*layers-layer),nodesInLayer=Math.floor(c/layers),nodeIdx=i%nodesInLayer,ring=Math.sqrt(ni)*spread*0.5,a=nodeIdx*2.399+layer*0.5+T*0.2;const x=(layer/(layers-1)-0.5)*spread*2,y=Math.cos(a)*ring*0.6+Math.sin(T+nodeIdx*0.1)*2,z=Math.sin(a)*ring*0.6;t.set(x,y,z);const pulse=Math.sin(T*3+layer*1.5+nodeIdx*0.05)*0.5+0.5;co.setHSL(0.55+layer*0.06,0.8,0.3+pulse*0.4);if(i===0)setInfo("Neural Network","Layered neural network with pulsing activations.")}},
+{name:"🌧️ Particle Rain",code(i,c,t,co,T){const area=addControl("ar","Area",20,80,50),speed=addControl("sp","Speed",1,10,4),n=i/c,x=(hash(i)-0.5)*area*2,z=(hash(i+500)-0.5)*area*2,cycle=(T*speed*0.5+hash(i)*50)%50,y=25-cycle;t.set(x+Math.sin(T*0.5+i*0.01)*1.5,y,z+Math.cos(T*0.3+i*0.02)*1.5);const fade=Math.max(0,1-Math.abs(y)/25);co.setHSL(0.58+hash(i)*0.05,0.6,0.3+fade*0.4);if(i===0)setInfo("Particle Rain","Cascading rain with gentle wind drift.")}},
+{name:"🌌 Aurora",code(i,c,t,co,T){const width=addControl("w","Width",20,80,50),height=addControl("h","Height",10,40,25),n=i/c,x=(n-0.5)*width*2,wave=Math.sin(x*0.08+T*0.5)*height*0.5+Math.sin(x*0.15-T*0.3)*height*0.3+Math.cos(x*0.05+T*0.8)*height*0.2,y=wave+(hash(i)-0.5)*8,z=(hash(i+1000)-0.5)*15+Math.sin(x*0.1+T)*3;t.set(x,y,z);const h=0.3+Math.sin(x*0.05+T*0.3)*0.15;co.setHSL(h,0.9,0.4+Math.sin(T+n*10)*0.15);if(i===0)setInfo("Aurora Borealis","Shimmering northern lights curtain.")}},
+{name:"🫧 Mandelbrot",code(i,c,t,co,T){const zoom=addControl("zm","Zoom",1,20,5),cx=-0.7+Math.sin(T*0.1)*0.3,cy=Math.cos(T*0.13)*0.3,n=i/c,px=(hash(i)-0.5)*4/zoom+cx,py=(hash(i+999)-0.5)*4/zoom+cy;let zx=0,zy=0,iter=0;while(zx*zx+zy*zy<4&&iter<20){const tmp=zx*zx-zy*zy+px;zy=2*zx*zy+py;zx=tmp;iter++}const sc2=20;t.set((hash(i)-0.5)*sc2*4,(hash(i+999)-0.5)*sc2*4,(iter/20)*sc2-sc2*0.5);const bright=iter/20;co.setHSL(0.55+bright*0.3+T*0.02,0.9,bright*0.6);if(i===0)setInfo("Mandelbrot Fractal","Zooming into the Mandelbrot set boundary.")}},
+{name:"🍶 Klein Bottle",code(i,c,t,co,T){const sc=addControl("sc","Scale",5,30,15),n=i/c,u=n*Math.PI*2,v2=hash(i)*Math.PI*2,cu=Math.cos(u),su=Math.sin(u),cv=Math.cos(v2),sv=Math.sin(v2);let x,y,z;if(u<Math.PI){x=(6*cu*(1+su)+4*(1-cu/2)*cv)*0.5;y=16*su*0.5;z=4*(1-cu/2)*sv*0.5}else{x=(6*cu*(1+su)-4*(1-cu/2)*cv)*0.5;y=16*su*0.5;z=4*(1-cu/2)*sv*0.5}const a=T*0.2;t.set((x*Math.cos(a)-z*Math.sin(a))*sc*0.15,y*sc*0.15,(x*Math.sin(a)+z*Math.cos(a))*sc*0.15);co.setHSL((n+T*0.03)%1,0.8,0.5);if(i===0)setInfo("Klein Bottle","Non-orientable surface passing through itself.")}},
+{name:"🌐 Hyperbolic",code(i,c,t,co,T){const sc=addControl("sc","Scale",10,40,22),layers=addControl("ly","Layers",3,12,7),n=i/c,layer=Math.floor(n*layers),lt=(n*layers-layer),r=3+layer*sc/layers,a=lt*Math.PI*2*(layer+1)*2+T*0.3*(1+layer*0.2),h=Math.sin(a*0.5+T)*3*(layer/layers);t.set(Math.cos(a)*r,h,Math.sin(a)*r);co.setHSL(0.6+layer*0.04,0.8,0.35+0.3*(1-layer/layers));if(i===0)setInfo("Hyperbolic Space","Poincaré-disk-inspired hyperbolic tiling.")}},
+{name:"🌀 Trefoil Knot",code(i,c,t,co,T){const sc=addControl("sc","Scale",8,35,18),sp=addControl("sp","Spin",0,5,1),n=i/c,u=n*Math.PI*2*2+T*0.2*sp;const x=Math.sin(u)+2*Math.sin(2*u),y=Math.cos(u)-2*Math.cos(2*u),z=-Math.sin(3*u);t.set(x*sc*0.55,y*sc*0.55,z*sc*0.55);co.setHSL((n+T*0.03)%1,0.9,0.55);if(i===0)setInfo("Trefoil Knot","Classic three-lobed mathematical knot.")}}
+];
+
+// === CRYPTO ===
+function genCPts(type){const c=document.createElement('canvas');c.width=256;c.height=256;const ctx=c.getContext('2d');ctx.clearRect(0,0,256,256);ctx.fillStyle='#fff';ctx.strokeStyle='#fff';
+if(type==='btc'){ctx.beginPath();ctx.arc(128,128,100,0,Math.PI*2);ctx.lineWidth=8;ctx.stroke();ctx.font='bold 140px Outfit,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('₿',128,132)}
+else if(type==='eth'){ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(128,22);ctx.lineTo(208,128);ctx.lineTo(128,100);ctx.lineTo(48,128);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(128,234);ctx.lineTo(208,128);ctx.lineTo(128,156);ctx.lineTo(48,128);ctx.closePath();ctx.fill();ctx.strokeStyle='#000';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(48,128);ctx.lineTo(128,100);ctx.lineTo(208,128);ctx.stroke();ctx.beginPath();ctx.moveTo(48,128);ctx.lineTo(128,156);ctx.lineTo(208,128);ctx.stroke()}
+else if(type==='sol'){const W=170,H=24,S=16,G=46,AW=20,dirs=[1,-1,1];for(let b=0;b<3;b++){const y=52+b*G,d=dirs[b],L=128-W/2,R=128+W/2;ctx.beginPath();if(d>0){ctx.moveTo(L+S,y);ctx.lineTo(R,y);ctx.lineTo(R+AW,y+H/2);ctx.lineTo(R,y+H);ctx.lineTo(L,y+H)}else{ctx.moveTo(R-S,y);ctx.lineTo(L,y);ctx.lineTo(L-AW,y+H/2);ctx.lineTo(L,y+H);ctx.lineTo(R,y+H)}ctx.closePath();ctx.fill()}}
+const id=ctx.getImageData(0,0,256,256).data,pts=[];for(let y=0;y<256;y++)for(let x=0;x<256;x++)if(id[(y*256+x)*4+3]>80)pts.push({x:(x-128)*0.2,y:-(y-128)*0.2});return pts}
+const cCache={};
+const CRYPTO=[{name:"₿ Bitcoin",cls:"cbtc",type:'btc',hue:0.08,title:"Bitcoin Logo",desc:"The iconic Bitcoin ₿ symbol."},{name:"⟠ Ethereum",cls:"ceth",type:'eth',hue:0.63,title:"Ethereum Logo",desc:"The Ethereum diamond."},{name:"◎ Solana",cls:"csol",type:'sol',hue:0.78,title:"Solana Logo",desc:"Solana's arrow bars.",grad:true}];
+CRYPTO.forEach(c=>{cCache[c.type]=genCPts(c.type)});
+function cryptoFn(i,c2,t,co,T,cp){const sc=addControl("sc","Scale",0.5,3,1.2),dp=addControl("dp","Depth",0,30,8),sp=addControl("sp","Spin",0,5,1);const pts=cCache[cp.type];if(!pts||!pts.length)return;const p=pts[i%pts.length],z=(hash(i)-0.5)*dp;let px=p.x*sc,py=p.y*sc,pz=z*sc;const a=T*0.3*sp;t.set(px*Math.cos(a)-pz*Math.sin(a),py,px*Math.sin(a)+pz*Math.cos(a));if(cp.grad){const g=(py/(sc*25)+1)*0.5;co.setHSL(0.82-g*0.35+Math.sin(T*0.3)*0.02,0.9,0.55+Math.sin(i*0.01+T)*0.08)}else{co.setHSL(cp.hue+Math.sin(T*0.5+i*0.001)*0.05,0.85,0.55+Math.sin(i*0.01+T)*0.1)}if(i===0)setInfo(cp.title,cp.desc)}
+
+// === SHAPES ===
+const SHAPES=[
+{n:"●",l:"Sphere",fn(i,c,t,co,T){const sz=addControl("sz","Radius",5,50,20),sp=addControl("sp","Spin",0,5,1),ph=Math.acos(1-2*(i+0.5)/c),th=Math.PI*(1+Math.sqrt(5))*i;let x=sz*Math.sin(ph)*Math.cos(th),y=sz*Math.cos(ph),z=sz*Math.sin(ph)*Math.sin(th);const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL((i/c+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Sphere","Fibonacci sphere.")}},
+{n:"■",l:"Cube",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,40,18),sp=addControl("sp","Spin",0,5,1),f=Math.floor(i/(c/6))%6,u=(hash(i)-0.5)*sz*2,v=(hash(i+999)-0.5)*sz*2,faces=[[u,v,sz],[u,v,-sz],[u,sz,v],[u,-sz,v],[sz,u,v],[-sz,u,v]],p=faces[f%6],a=T*0.2*sp;t.set(p[0]*Math.cos(a)-p[2]*Math.sin(a),p[1],p[0]*Math.sin(a)+p[2]*Math.cos(a));co.setHSL((f/6+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Cube","Six-faced cube.")}},
+{n:"▲",l:"Pyramid",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,50,25),sp=addControl("sp","Spin",0,5,1),n=i/c,h=n*sz*2-sz,r=Math.max(0,1-n)*sz*0.8,a2=(i*2.4+i*0.1)*Math.PI*2,rr=r*Math.sqrt(hash(i));let x=Math.cos(a2)*rr,z=Math.sin(a2)*rr;const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),h,x*Math.sin(a)+z*Math.cos(a));co.setHSL((n+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Pyramid","Cone pyramid.")}},
+{n:"◆",l:"Torus",fn(i,c,t,co,T){const R=addControl("sz","Radius",8,45,20),sp=addControl("sp","Spin",0,5,1),r=R*0.35,uN=(i/c)*Math.PI*2,v=i*2.399*Math.PI*2;let x=(R+r*Math.cos(v))*Math.cos(uN),y=r*Math.sin(v),z=(R+r*Math.cos(v))*Math.sin(uN);const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL((i/c+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Torus","Donut shape.")}},
+{n:"★",l:"Star",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,45,22),sp=addControl("sp","Spin",0,5,1),a2=(i/c)*Math.PI*2*5,rr=sz*(0.4+0.6*(Math.sin(a2*2.5)*0.5+0.5));let x=Math.cos(a2)*rr,y=Math.sin(a2)*rr,z=(hash(i)-0.5)*sz*0.3;const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL((i/c+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Star","Five-pointed star.")}},
+{n:"⬡",l:"Hexa",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,45,20),sp=addControl("sp","Spin",0,5,1),n=i/c,a2=n*Math.PI*2*6,r=(Math.floor(Math.sqrt(n)*8)/8)*sz;let x=Math.cos(a2)*r,y=Math.sin(a2)*r,z=(hash(i)-0.5)*sz*0.25;const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL((i/c+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Hexagon","Hexagonal rings.")}},
+{n:"♥",l:"Heart",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,45,20),sp=addControl("sp","Spin",0,5,1),s=sz*0.08,t2=(i/c)*Math.PI*2;let x=16*Math.pow(Math.sin(t2),3)*s*12,y=(13*Math.cos(t2)-5*Math.cos(2*t2)-2*Math.cos(3*t2)-Math.cos(4*t2))*s*12,z=(hash(i)-0.5)*s*60;const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL(0.95,0.85,0.55);if(i===0)setInfo("Heart","Parametric heart.")}},
+{n:"∞",l:"Infinity",fn(i,c,t,co,T){const sz=addControl("sz","Size",5,45,20),sp=addControl("sp","Spin",0,5,1),t2=(i/c)*Math.PI*2,dn=1+Math.sin(t2)*Math.sin(t2);let x=Math.cos(t2)/dn*sz*1.5,y=Math.sin(t2)*Math.cos(t2)/dn*sz*1.5,z=(hash(i)-0.5)*sz*0.3;const a=T*0.2*sp;t.set(x*Math.cos(a)-z*Math.sin(a),y,x*Math.sin(a)+z*Math.cos(a));co.setHSL((i/c+T*0.03)%1,0.8,0.55);if(i===0)setInfo("Infinity","Lemniscate of Bernoulli.")}}
+];
+
+// === TEXT ===
+let tCan,tCtx;(function(){tCan=document.createElement('canvas');tCan.width=512;tCan.height=256;tCtx=tCan.getContext('2d')})();
+function genTP(text){const c=tCan,ctx=tCtx;ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';let fs=140;ctx.font=`bold ${fs}px Outfit,sans-serif`;let m=ctx.measureText(text);while(m.width>c.width*0.85&&fs>20){fs-=4;ctx.font=`bold ${fs}px Outfit,sans-serif`;m=ctx.measureText(text)}ctx.fillText(text,c.width/2,c.height/2);const id=ctx.getImageData(0,0,c.width,c.height).data,pts=[];const step=Math.max(1,Math.round(Math.sqrt(c.width*c.height/20000)));for(let y=0;y<c.height;y+=step)for(let x=0;x<c.width;x+=step)if(id[(y*c.width+x)*4+3]>128)pts.push({x:(x-c.width/2)*0.15,y:-(y-c.height/2)*0.15});return pts}
+
+// === SAMPLE MODELS ===
+function genTeapot(){const p=[];for(let i=0;i<3000;i++){const n=i/3000;if(n<0.5){const t=n/0.5,ph=Math.acos(1-2*t),th=Math.PI*(1+Math.sqrt(5))*i;p.push({x:Math.sin(ph)*Math.cos(th)*15,y:Math.cos(ph)*10.5-3,z:Math.sin(ph)*Math.sin(th)*15})}else if(n<0.7){const t=(n-0.5)/0.2,a=t*62.83,r=t*10;p.push({x:Math.cos(a)*r,y:8+t*4,z:Math.sin(a)*r})}else if(n<0.85){const t=(n-0.7)/0.15;p.push({x:14+t*10+Math.sin(t*3)*2,y:t*12-2,z:(hash(i)-0.5)*6})}else{const t=(n-0.85)/0.15,a=t*Math.PI+0.94;p.push({x:-14-Math.cos(a)*8,y:Math.sin(a)*10,z:(hash(i+500)-0.5)*4})}}return p}
+function genSkull(){const p=[];for(let i=0;i<3000;i++){const n=i/3000;if(n<0.55){const ph=Math.acos(1-(n/0.55)),th=Math.PI*(1+Math.sqrt(5))*i;p.push({x:Math.sin(ph)*Math.cos(th)*16,y:Math.cos(ph)*16,z:Math.sin(ph)*Math.sin(th)*13.6})}else if(n<0.75){const t=(n-0.55)/0.2,a=(t-0.5)*Math.PI*0.8;p.push({x:Math.sin(a)*(12+Math.cos(a)*3),y:-8-t*8,z:Math.cos(a)*4+5})}else if(n<0.85){const a=((n-0.75)/0.1)*Math.PI*2;p.push({x:-5+Math.cos(a)*3.5,y:4+Math.sin(a)*3.5,z:13})}else if(n<0.95){const a=((n-0.85)/0.1)*Math.PI*2;p.push({x:5+Math.cos(a)*3.5,y:4+Math.sin(a)*3.5,z:13})}else{const a=((n-0.95)/0.05)*Math.PI*2;p.push({x:Math.cos(a)*2,y:-2+Math.sin(a)*3,z:14})}}return p}
+function genDNA(){const p=[];for(let i=0;i<3000;i++){const n=i/3000,a=n*Math.PI*12,r=12,y=(n-0.5)*50,s=i%2===0?1:-1;if(i%15<2){const t2=n*Math.PI*12;p.push({x:Math.cos(t2)*r*0.3,y,z:Math.sin(t2)*r*0.3})}else{p.push({x:Math.cos(a)*r*s,y:y+Math.sin(n*20)*1.5,z:Math.sin(a)*r*s})}}return p}
+function genDodeca(){const p=[],phi=(1+Math.sqrt(5))/2,ip=1/phi,verts=[[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1],[0,phi,ip],[0,phi,-ip],[0,-phi,ip],[0,-phi,-ip],[ip,0,phi],[ip,0,-phi],[-ip,0,phi],[-ip,0,-phi],[phi,ip,0],[phi,-ip,0],[-phi,ip,0],[-phi,-ip,0]];for(let i=0;i<3000;i++){const vi=i%verts.length,v=verts[vi],jt=0.8;p.push({x:v[0]*10+(hash(i)-0.5)*jt,y:v[1]*10+(hash(i+500)-0.5)*jt,z:v[2]*10+(hash(i+1000)-0.5)*jt})}return p}
+const SMOD=[{name:"🫖 Teapot",t:"Teapot",d:"Classic Utah teapot.",g:genTeapot},{name:"🧬 DNA Mol.",t:"DNA Molecule",d:"Double helix molecular structure.",g:genDNA},{name:"💀 Skull",t:"Skull",d:"Stylized skull.",g:genSkull},{name:"⬡ Dodeca",t:"Dodecahedron",d:"12-faced regular polyhedron.",g:genDodeca}];
+
+// === FILE PARSING ===
+function parseOBJ(t){const p=[];t.split('\n').forEach(l=>{if(l.startsWith('v ')){const s=l.trim().split(/\s+/);p.push({x:+s[1]||0,y:+s[2]||0,z:+s[3]||0})}});return normP(p)}
+function parsePDB(t){const p=[];t.split('\n').forEach(l=>{if(l.startsWith('ATOM')||l.startsWith('HETATM')){const x=+l.substring(30,38),y=+l.substring(38,46),z=+l.substring(46,54);if(!isNaN(x))p.push({x,y,z})}});return normP(p)}
+function parseGLB(buf){const v=new DataView(buf);if(v.getUint32(0,true)!==0x46546C67)return[];try{const jl=v.getUint32(12,true),js=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,20,jl))),bs=20+jl+8,bd=new Uint8Array(buf,bs),m=js.meshes[0].primitives[0],ac=js.accessors[m.attributes.POSITION],bv=js.bufferViews[ac.bufferView],off=(bv.byteOffset||0)+(ac.byteOffset||0),dv=new DataView(bd.buffer,bd.byteOffset+off),p=[];for(let i=0;i<ac.count;i++)p.push({x:dv.getFloat32(i*12,true),y:dv.getFloat32(i*12+4,true),z:dv.getFloat32(i*12+8,true)});return normP(p)}catch(e){return[]}}
+function normP(p){if(!p.length)return p;let mx=Infinity,my=Infinity,mz=Infinity,Mx=-Infinity,My=-Infinity,Mz=-Infinity;p.forEach(v=>{mx=Math.min(mx,v.x);my=Math.min(my,v.y);mz=Math.min(mz,v.z);Mx=Math.max(Mx,v.x);My=Math.max(My,v.y);Mz=Math.max(Mz,v.z)});const cx=(mx+Mx)/2,cy=(my+My)/2,cz=(mz+Mz)/2,rng=Math.max(Mx-mx,My-my,Mz-mz)||1,s=40/rng;return p.map(v=>({x:(v.x-cx)*s,y:(v.y-cy)*s,z:(v.z-cz)*s}))}
+const dZ=document.getElementById('dZ'),fI=document.getElementById('fI');
+dZ.addEventListener('click',()=>fI.click());dZ.addEventListener('dragover',e=>{e.preventDefault();dZ.classList.add('dg')});dZ.addEventListener('dragleave',()=>dZ.classList.remove('dg'));dZ.addEventListener('drop',e=>{e.preventDefault();dZ.classList.remove('dg');hF(e.dataTransfer.files[0])});fI.addEventListener('change',e=>{if(e.target.files[0])hF(e.target.files[0])});
+function hF(f){const ext=f.name.split('.').pop().toLowerCase(),rd=new FileReader();if(ext==='obj'||ext==='pdb'){rd.onload=e=>{modelPts=ext==='obj'?parseOBJ(e.target.result):parsePDB(e.target.result);if(modelPts.length){switchMode('model');dZ.innerHTML=`<span class="di">✅</span>${f.name}<span class="fm">${modelPts.length} pts</span>`}};rd.readAsText(f)}else if(ext==='glb'||ext==='gltf'){rd.onload=e=>{modelPts=parseGLB(e.target.result);if(modelPts.length){switchMode('model');dZ.innerHTML=`<span class="di">✅</span>${f.name}<span class="fm">${modelPts.length} pts</span>`}};rd.readAsArrayBuffer(f)}}
+
+// ================================================================
+// GALLERY SYSTEM
+// ================================================================
+let gallery = [];
+try { gallery = JSON.parse(localStorage.getItem('pa_gallery') || '[]') } catch(e) { gallery = [] }
+
+function saveToGallery() {
+  ren.render(sc, cam);
+  const screenshot = ren.domElement.toDataURL('image/jpeg', 0.6);
+  const title = document.getElementById('i-t').textContent;
+  const controlState = {};
+  for (const id in _c) controlState[id] = _c[id].val;
+  const entry = {
+    id: Date.now(),
+    title,
+    screenshot,
+    mode,
+    presetI: mode === 'preset' ? presetI : undefined,
+    cryptoI: mode === 'crypto' ? cryptoI : undefined,
+    shapeI: mode === 'shape' ? shapeI : undefined,
+    textVal: mode === 'text' ? (document.getElementById('tI').value || 'HELLO') : undefined,
+    controls: controlState,
+    particles: N,
+    pSz, smth, tSpd,
+    cam: { t: sph.t, p: sph.p, r: sph.r },
+    date: new Date().toLocaleDateString()
+  };
+  gallery.unshift(entry);
+  if (gallery.length > 20) gallery.pop(); // max 20
+  try { localStorage.setItem('pa_gallery', JSON.stringify(gallery)) } catch(e) {}
+  buildGallery();
+}
+
+function loadFromGallery(entry) {
+  // Restore particle count
+  if (entry.particles && entry.particles !== N) makeParts(entry.particles);
+  // Restore global settings
+  if (entry.pSz) { pSz = entry.pSz; mat.size = pSz; document.getElementById('g-sz').value = pSz; document.getElementById('v-sz').textContent = pSz.toFixed(1) }
+  if (entry.smth) { smth = entry.smth; document.getElementById('g-sm').value = smth; document.getElementById('v-sm').textContent = smth.toFixed(2) }
+  if (entry.tSpd) { tSpd = entry.tSpd; document.getElementById('g-sp').value = tSpd; document.getElementById('v-sp').textContent = tSpd.toFixed(1) }
+  if (entry.cam) { tgt.t = entry.cam.t; tgt.p = entry.cam.p; tgt.r = entry.cam.r; document.getElementById('g-cd').value = entry.cam.r; document.getElementById('v-cd').textContent = Math.round(entry.cam.r) }
+  // Restore mode
+  if (entry.mode === 'text' && entry.textVal) {
+    document.getElementById('tI').value = entry.textVal;
+    textPts = genTP(entry.textVal);
+  }
+  switchMode(entry.mode, entry.presetI || entry.cryptoI || entry.shapeI || 0);
+  // Restore control values
+  if (entry.controls) {
+    setTimeout(() => {
+      for (const id in entry.controls) {
+        if (_c[id]) {
+          _c[id].val = entry.controls[id];
+        }
+      }
+      rebuildControls();
+    }, 100);
+  }
+  buildCounts();
+  // Switch to the right tab
+  const tabMap = { preset: 'presets', crypto: 'crypto', shape: 'shapes', text: 'text', model: 'models' };
+  const tabName = tabMap[entry.mode] || 'presets';
+  document.querySelectorAll('.tn button').forEach(b => b.classList.remove('a'));
+  document.querySelectorAll('.tc').forEach(c => c.classList.remove('a'));
+  const tabBtn = document.querySelector(`.tn button[data-t="${tabName}"]`);
+  if (tabBtn) tabBtn.classList.add('a');
+  const tabC = document.querySelector(`.tc[data-t="${tabName}"]`);
+  if (tabC) tabC.classList.add('a');
+}
+
+function deleteFromGallery(id) {
+  gallery = gallery.filter(e => e.id !== id);
+  try { localStorage.setItem('pa_gallery', JSON.stringify(gallery)) } catch(e) {}
+  buildGallery();
+}
+
+function buildGallery() {
+  const g = document.getElementById('galGrid');
+  document.getElementById('galCount').textContent = gallery.length;
+  if (!gallery.length) { g.innerHTML = '<div class="gal-empty">No saved creations yet.<br>Click "Save Current" to capture!</div>'; return }
+  g.innerHTML = '';
+  gallery.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'gal-card';
+    card.innerHTML = `<img src="${e.screenshot}" alt="${e.title}"><div class="gal-info"><div class="gal-name">${e.title}</div><div class="gal-meta">${(e.particles||20000).toLocaleString()} pts · ${e.date||''}</div></div><button class="gal-del" onclick="event.stopPropagation();deleteFromGallery(${e.id})">×</button>`;
+    card.addEventListener('click', () => loadFromGallery(e));
+    g.appendChild(card);
+  });
+}
+
+// === MAIN UPDATE ===
+const tT=new THREE.Vector3(),tC=new THREE.Color();
+function updP(i){tT.set(0,0,0);tC.setHSL(0,0,1);
+if(mode==='preset')PRESETS[presetI].code(i,N,tT,tC,simT);
+else if(mode==='crypto')cryptoFn(i,N,tT,tC,simT,CRYPTO[cryptoI]);
+else if(mode==='shape')SHAPES[shapeI].fn(i,N,tT,tC,simT);
+else if(mode==='text'){if(!textPts||!textPts.length)return;const sc=addControl("tsc","Scale",0.3,3,1),dp=addControl("tdp","Depth",0,30,5),sp=addControl("tsp","Spin",0,5,0.5),p=textPts[i%textPts.length],z=(hash(i)-0.5)*dp;let px=p.x*sc,py=p.y*sc,pz=z*sc;const a=simT*0.15*sp;tT.set(px*Math.cos(a)-pz*Math.sin(a),py,px*Math.sin(a)+pz*Math.cos(a));tC.setHSL((i/N*0.3+simT*0.04)%1,0.85,0.55);if(i===0)setInfo("Text: "+(document.getElementById('tI').value||'HELLO'),textPts.length+" pts.")}
+else if(mode==='model'){if(!modelPts||!modelPts.length)return;const sc=addControl("msc","Scale",0.3,3,1),jt=addControl("mjt","Jitter",0,50,5),sp=addControl("msp","Spin",0,5,1),p=modelPts[i%modelPts.length],j=jt*0.1;let px=(p.x+(hash(i)-0.5)*j)*sc,py=(p.y+(hash(i+999)-0.5)*j)*sc,pz=(p.z+(hash(i+1999)-0.5)*j)*sc;const a=simT*0.2*sp;tT.set(px*Math.cos(a)-pz*Math.sin(a),py,px*Math.sin(a)+pz*Math.cos(a));tC.setHSL((i/N+simT*0.02)%1,0.75,0.55);if(i===0)setInfo("3D Model",modelPts.length+" vertices.")}}
+
+// === UI ===
+function switchMode(m,idx){mode=m;clearControls();clearAnnotations();if(m==='preset')presetI=idx||0;else if(m==='crypto')cryptoI=idx||0;else if(m==='shape')shapeI=idx||0;buildAll()}
+function buildPresets(){const g=document.getElementById('pG');g.innerHTML='';document.getElementById('presetCount').textContent=PRESETS.length;PRESETS.forEach((p,i)=>{const b=document.createElement('button');b.className='pb'+(mode==='preset'&&i===presetI?' a':'');b.textContent=p.name;b.onclick=()=>switchMode('preset',i);g.appendChild(b)})}
+function buildCrypto(){const g=document.getElementById('cG');g.innerHTML='';CRYPTO.forEach((p,i)=>{const b=document.createElement('button');b.className='pb '+p.cls+(mode==='crypto'&&i===cryptoI?' a':'');b.textContent=p.name;b.onclick=()=>switchMode('crypto',i);g.appendChild(b)})}
+function buildShapes(){const g=document.getElementById('sG');g.innerHTML='';SHAPES.forEach((s,i)=>{const b=document.createElement('button');b.className='sb2'+(mode==='shape'&&i===shapeI?' a':'');b.innerHTML=`${s.n}<span class="sl">${s.l}</span>`;b.onclick=()=>switchMode('shape',i);g.appendChild(b)})}
+function buildModels(){const g=document.getElementById('mG');g.innerHTML='';SMOD.forEach(m=>{const b=document.createElement('button');b.className='pb';b.textContent=m.name;b.onclick=()=>{modelPts=m.g();switchMode('model');setInfo(m.t,m.d)};g.appendChild(b)})}
+function buildCounts(){const w=document.getElementById('cB');w.innerHTML='';PCS.forEach(c=>{const b=document.createElement('button');b.className='cbtn'+(c===N?' a':'');b.textContent=c>=1000?(c/1000)+'K':c;b.onclick=()=>{makeParts(c);buildCounts()};w.appendChild(b)})}
+function buildAll(){buildPresets();buildCrypto();buildShapes();buildModels();buildGallery()}
+function applyText(){const t=document.getElementById('tI').value.trim()||'HELLO';textPts=genTP(t);switchMode('text')}
+document.getElementById('tI').addEventListener('keydown',e=>{if(e.key==='Enter')applyText()});
+function resetCam(){tgt={t:0,p:Math.PI/4,r:80};document.getElementById('g-cd').value=80;document.getElementById('v-cd').textContent='80'}
+
+// TABS
+document.querySelectorAll('.tn button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tn button').forEach(x=>x.classList.remove('a'));document.querySelectorAll('.tc').forEach(x=>x.classList.remove('a'));b.classList.add('a');document.querySelector(`.tc[data-t="${b.dataset.t}"]`).classList.add('a')}));
+
+// GLOBAL
+document.getElementById('g-sz').addEventListener('input',function(){pSz=+this.value;mat.size=pSz;document.getElementById('v-sz').textContent=pSz.toFixed(1)});
+document.getElementById('g-sm').addEventListener('input',function(){smth=+this.value;document.getElementById('v-sm').textContent=smth.toFixed(2)});
+document.getElementById('g-sp').addEventListener('input',function(){tSpd=+this.value;document.getElementById('v-sp').textContent=tSpd.toFixed(1)});
+document.getElementById('g-cd').addEventListener('input',function(){tgt.r=+this.value;document.getElementById('v-cd').textContent=Math.round(this.value)});
+
+// === ANIMATE ===
+let lf=performance.now(),fc=0,fa=0;
+function animate(){requestAnimationFrame(animate);const now=performance.now(),dt=(now-lf)/1000;lf=now;fa+=dt;fc++;if(fa>=0.5){document.getElementById('s-f').textContent=Math.round(fc/fa);fc=0;fa=0}simT+=dt*tSpd;document.getElementById('s-t').textContent=simT.toFixed(1)+'s';sph.t+=(tgt.t-sph.t)*0.08;sph.p+=(tgt.p-sph.p)*0.08;sph.r+=(tgt.r-sph.r)*0.08;uCam();_cu={};const pk=Object.keys(_c).join(',');const p=geo.attributes.position.array,c=geo.attributes.color.array;for(let i=0;i<N;i++){updP(i);const i3=i*3;p[i3]+=(tT.x-p[i3])*smth;p[i3+1]+=(tT.y-p[i3+1])*smth;p[i3+2]+=(tT.z-p[i3+2])*smth;c[i3]=tC.r;c[i3+1]=tC.g;c[i3+2]=tC.b}geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true;if(_nr||Object.keys(_c).join(',')!==pk){rebuildControls();_nr=false}updateAnnotations();ren.render(sc,cam)}
+addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight)});
+
+// === INIT ===
+makeParts(N);buildAll();buildCounts();switchMode('preset',0);uCam();animate();
+setTimeout(()=>document.getElementById('lo').classList.add('h'),600);
+</script>
+</body>
+</html>
